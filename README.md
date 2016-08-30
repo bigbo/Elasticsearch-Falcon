@@ -23,10 +23,10 @@ http://www.apache.org/licenses/LICENSE-2.0.html
 
 修改FALCON_HTTP_URL & CLUSTER_NAME 两个变量
 
- 采用agent方式收集
+1.采用agent方式收集
 - copy ESFalcon.py 到 /etc/open-falcon/agent/plugin/ 下根据自己采集周期来重命名文件名
 
- 采取crontab
+2.采取crontab
 - 例如 */5 * * * * /usr/bin/python /root/ESFalcon.py 2>&1 
 
 # 简述
