@@ -1,7 +1,5 @@
 # Elasticsearch-Falcon
 
-====================
-
 Elasticsearch 监控脚本 for Open-Falcon( http://book.open-falcon.org/ )
 
 This project is a fork of Elasticsearch script of serialsito
@@ -15,16 +13,23 @@ http://www.apache.org/licenses/LICENSE-2.0.html
 该脚本只针对ES集群做数据采集监控，相应模板请根据自己实际情况进行设置选择.
 
 # 使用方法
-=============
 
-1. 采用agent方式收集
+安装依赖
+
+```
+# yum install -y python-pbr python-pip python-urllib3 python-unittest2 python-requests
+# pip install elasticsearch
+```
+
+修改FALCON_HTTP_URL & CLUSTER_NAME 两个变量
+
+ 采用agent方式收集
 - copy ESFalcon.py 到 /etc/open-falcon/agent/plugin/ 下根据自己采集周期来重命名文件名
 
-2. 采取crontab
+ 采取crontab
 - 例如 */5 * * * * /usr/bin/python /root/ESFalcon.py 2>&1 
 
 # 简述
-=====
 
 所有项目是用于监控 Elasticsearch 集群运行情况
 
@@ -68,5 +73,5 @@ http://www.apache.org/licenses/LICENSE-2.0.html
     - Records indexed per second
 
 # TODO
-=============
+
 1.ES 节点级监控
