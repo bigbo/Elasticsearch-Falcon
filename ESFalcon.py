@@ -68,8 +68,8 @@ for clusterkey in CLUSTER_KEYS:
             subtotal += indexstats[clusterkey]
         except Exception, e:
             pass
-        cluster_data["metric"] = clusterkey
-        cluster_data["value"] = subtotal
+    cluster_data["metric"] = clusterkey
+    cluster_data["value"] = subtotal
     payload.append(cluster_data)
 
 try:
