@@ -61,7 +61,7 @@ except Exception, e:
 for clusterkey in CLUSTER_KEYS:
     nodestats = conn.nodes.stats()
     subtotal = 0
-    cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":360,"counterType":"GAUGE","tags":CLUSTER_NAME}
+    cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":60,"counterType":"GAUGE","tags":CLUSTER_NAME}
     for nodename in nodestats[u'nodes']:
         if clusterkey in INDEXING_KEYS:
             indexstats = nodestats[u'nodes'][nodename][u'indices'][u'indexing']
@@ -96,7 +96,7 @@ except Exception, e:
     falcon_fail()
 
 for clusterkey in CLUSTER_HEALTH:
-    cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":300,"counterType":"GAUGE","tags":CLUSTER_NAME}
+    cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":60,"counterType":"GAUGE","tags":CLUSTER_NAME}
     if clusterkey in CLUSTER_STATUS_DIC:
        cluster_data['metric'] = CLUSTER_STATUS_DIC[clusterkey]
        cluster_data['value'] = CLUSTER_HEALTH[clusterkey]
