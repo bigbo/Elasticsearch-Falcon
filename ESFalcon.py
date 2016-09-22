@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 __author__   ="bigbo (ljb90@live.cn)"
-__date__     ="2016-08-30 14:33"
+__date__     ="2016-09-22 11:10"
 __copyright__="Copyright 2016 58, Inc"
 __license__  ="58, Inc"
-__version__  ="0.1"
+__version__  ="0.2"
 
 from elasticsearch import *
 import requests
@@ -24,18 +24,27 @@ INDEXING_KEYS = ['delete_time_in_millis', 'index_total', 'index_current', 'delet
 STORE_KEYS = ['size_in_bytes', 'throttle_time_in_millis']
 CACHE_KEYS = ['filter_size_in_bytes', 'field_size_in_bytes', 'field_evictions']
 JVM_KEYS = ['heap_used_percent']
-CLUSTER_STATUS = None
+CLUSTER_HEALTH = None
 CLUSTER_STATUS_DIC = {
-	'green':0,
-	'red':1,
-	'yellow':2
-	}
+        u'green':0,
+        u'yellow':1,
+        u'red':2,
+        u'size_in_bytes':'Cluster-wide storage size',
+        u'count':'Total number of records',
+        u'active_primary_shards':'Number of active primary shards',
+        u'active_shards':'Number of active shards',
+        u'number_of_data_nodes':'Number of data nodes',
+        u'initializing_shards':'Number of initializing shards',
+        u'number_of_nodes':'Number of nodes',
+        u'relocating_shards':'Number of relocating shards',
+        u'unassigned_shards':'Number of unassigned shards'
+        }
+
 
 CLUSTER_KEYS = SEARCH_KEYS + GET_KEYS + DOCS_KEYS + INDEXING_KEYS + STORE_KEYS
 
 ts = int(time.time())
 payload = []
-
 
 
 def falcon_fail():
@@ -68,20 +77,34 @@ for clusterkey in CLUSTER_KEYS:
             subtotal += indexstats[clusterkey]
         except Exception, e:
             pass
-    cluster_data["metric"] = clusterkey
-    cluster_data["value"] = subtotal
+    cluster_data['value'] = subtotal
+    if clusterkey in CLUSTER_STATUS_DIC:
+        cluster_data['metric'] = CLUSTER_STATUS_DIC[clusterkey]
+    else:
+        cluster_data['metric'] = clusterkey
     payload.append(cluster_data)
 
+    if cluster_data['metric'] == 'index_total':
+        cluster_data['metric'] = 'Cluster-wide records indexed per second'
+        cluster_data['counterType'] = 'COUNTER'
+        payload.append(cluster_data)
+
+
 try:
-    CLUSTER_STATUS = conn.cluster.health()[unicode('status')]
-    CLUSTER_STATUS = CLUSTER_STATUS_DIC[CLUSTER_STATUS]
+    CLUSTER_HEALTH = conn.cluster.health()
 except Exception, e:
     falcon_fail()
 
-cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":360,"counterType":"GAUGE","tags":CLUSTER_NAME}
-cluster_data["metric"] = "cluster_status"
-cluster_data["value"] = CLUSTER_STATUS
-payload.append(cluster_data)
+for clusterkey in CLUSTER_HEALTH:
+    cluster_data = {"endpoint":"es_cluster_data","timestamp":ts,"step":300,"counterType":"GAUGE","tags":CLUSTER_NAME}
+    if clusterkey in CLUSTER_STATUS_DIC:
+       cluster_data['metric'] = CLUSTER_STATUS_DIC[clusterkey]
+       cluster_data['value'] = CLUSTER_HEALTH[clusterkey]
+       payload.append(cluster_data)
+    elif clusterkey == u'status':
+       cluster_data['metric'] = 'ElasticSearch Cluster Status'
+       cluster_data['value'] = CLUSTER_STATUS_DIC[CLUSTER_HEALTH[clusterkey]]
+       payload.append(cluster_data)
 
 r = requests.post(FALCON_HTTP_URL, data=json.dumps(payload))
 
